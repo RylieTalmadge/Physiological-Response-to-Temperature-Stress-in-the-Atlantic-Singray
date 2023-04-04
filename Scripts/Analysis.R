@@ -6,8 +6,18 @@ resp_data <- read_excel('data/MetabolicCalc.xlsx', sheet = 'Processed Data',
                   n_max = 4)
 
 # transpose matrix 
-t_resp_data <- t(resp_data)
-head(t_resp_data)
+resp_data <- t(resp_data)
+
+resp_data <- data.frame(resp_data)
+names(resp_data) <- resp_data[1, ]
+resp_data <- resp_data[-1, ]
+resp_data$sample_id <- rownames(resp_data)
+
+head(resp_data)
+sapply(resp_data, class)
+resp_data$`Metabolic Rate` <- as.numeric(resp_data$`Metabolic Rate`)
+resp_data$`Sex` <- as.factor(resp_data$`Sex`)
+resp_data$`Temp (˚C)` <- as.numeric(resp_data$`Temp (˚C)`)
 
 tidyr::pivot_longer()
 
@@ -83,4 +93,3 @@ summary(model)
 # Two-way ANOVA to compare sex
 anova_model <- aov(Metabolic_Rate ~ Gender + Temperature + Sex:Temperature, data = resp_data)
 summary(anova_model)
-
