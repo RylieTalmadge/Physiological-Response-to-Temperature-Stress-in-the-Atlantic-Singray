@@ -63,14 +63,17 @@ ggplot(resp_data, aes(x = factor(temp), y = metabolic_rate)) +
 my_colors <- c("blue", "green", "orange")
 my_temps <- c("16", "21", "26")
 
-ggplot(data = resp_data, aes(x = temp, y = metabolic_rate)) + 
+ggplot(data = resp_data, aes(x = factor(temp), y = metabolic_rate, fill = factor(temp))) + 
   geom_bar(stat = "identity") +
-  scale_fill_manual(values = my_colors) +
-  scale_x_discrete(limits = my_temps) +
-  scale_y_continuous(limits = c(0, 15), expand = c(0, 0))
-  labs(title = "Mean Metabolic Rates by Temperature",
-       x = "Temperature (Celsius)",
-       y = "Mean Metabolic Rate (MO2)")
+labs(title = "Mean Metabolic Rates by Temperature",
+     x = "Temperature (Celsius)",
+     y = "Mean Metabolic Rate (MO2)") +
+  scale_fill_manual(
+    name = "Temperature (Celsius)"
+    labels = my_temps
+    values = my_colors
+  )
+
 
 # Normal Data
 # Ignore for now until data issue is corrected (see volume issue above)
@@ -84,8 +87,9 @@ shapiro_test_21
 shapiro_test_26
 
 # ANOVA Analysis
-model <- aov(metabolic_rate ~ temp, data = resp_data)
+model <- aov(metabolic_rate ~ factor(temp), data = resp_data)
 summary(model)
 
-# car::Anova(mod, type=)
-
+# Tukey's Post Hoc Test
+TukeyHSD(model, conf.level = 0.95)
+# no significant difference between 26-21, but the 21-16 and 16-26 are
