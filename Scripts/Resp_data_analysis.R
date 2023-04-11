@@ -60,19 +60,32 @@ ggplot(resp_data, aes(x = factor(temp), y = metabolic_rate)) +
   ggtitle("Metabolic Rates by Temperature")
 
 # Bar graph
-ggplot(mean_rates, aes(x = sex, y = metabolic_rate, fill = sex)) +
-  geom_col() +
-  labs(x = "Sex", y = "Mean Metabolic Rate") +
-  ggtitle("Mean Metabolic Rates by Sex")
+my_colors <- c("blue", "green", "orange")
+my_temps <- c("16", "21", "26")
+
+ggplot(data = resp_data, aes(x = temp, y = metabolic_rate)) + 
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = my_colors) +
+  scale_x_discrete(limits = my_temps) +
+  scale_y_continuous(limits = c(0, 15), expand = c(0, 0))
+  labs(title = "Mean Metabolic Rates by Temperature",
+       x = "Temperature (Celsius)",
+       y = "Mean Metabolic Rate (MO2)")
 
 # Normal Data
-# Data were tested for normality and non-normal data were rank transformed.
 # Ignore for now until data issue is corrected (see volume issue above)
-shapiro.test(x)
-x_rank <- rank(x)
+  # Perform a Shapiro-Wilk test for each temperature group
+shapiro_test_16 <- shapiro.test(metabolic_rates$mean_rate[metabolic_rates$temp == "16"])
+shapiro_test_21 <- shapiro.test(metabolic_rates$mean_rate[metabolic_rates$temp == "21"])
+shapiro_test_26 <- shapiro.test(metabolic_rates$mean_rate[metabolic_rates$temp == "26"])
+  # Print the test results
+shapiro_test_16
+shapiro_test_21
+shapiro_test_26
 
 # ANOVA Analysis
 model <- aov(metabolic_rate ~ temp, data = resp_data)
 summary(model)
+
 # car::Anova(mod, type=)
 
