@@ -38,7 +38,7 @@ with(resp_data, tapply(`metabolic_rate`, list(sex), sd))
 # MO2 Mean and Stdv by Temp
 mean_temp <- with(resp_data, tapply(`metabolic_rate`, list(temp), mean))
 with(resp_data, tapply(`metabolic_rate`, list(temp), sd))
-
+mean_temp
 
 # Index of Thermal Sensitivity (Q10)
 # Q10 = (K2/K1)^(10/t2-t1)
@@ -56,24 +56,25 @@ ggplot(resp_data, aes(x = temp, y = metabolic_rate, color = sex)) +
 # Box plot
 ggplot(resp_data, aes(x = factor(temp), y = metabolic_rate)) +
   geom_boxplot() +
-  labs(x = "temp", y = "metabolic_rate") +
+  labs(x = "temp (˚C)", y = "metabolic rate (MO2)") +
   ggtitle("Metabolic Rates by Temperature")
 
 # Bar graph
-my_colors <- c("blue", "green", "orange")
+my_colors <- c("#ffad33", "#339966", "#66b3ff")
 my_temps <- c("16", "21", "26")
+se <- sd(metabolic_rate)/sqrt(4)
 
-ggplot(data = resp_data, aes(x = factor(temp), y = metabolic_rate, fill = factor(temp))) + 
+ggplot(data = resp_data, aes(x = factor(temp), y =metabolic_rate, fill = factor(temp))) + 
   geom_bar(stat = "identity") +
-labs(title = "Mean Metabolic Rates by Temperature",
+  geom_errorbar(aes(ymin = metabolic_rate - se, ymax = metabolic_rate + se), width = 0.5) +
+  labs(title = "Mean Metabolic Rates by Temperature",
      x = "Temperature (Celsius)",
      y = "Mean Metabolic Rate (MO2)") +
   scale_fill_manual(
-    name = "Temperature (Celsius)"
-    labels = my_temps
+    name = "Temperature (Celsius)",
+    labels = my_temps,
     values = my_colors
   )
-
 
 # Normal Data
 # Ignore for now until data issue is corrected (see volume issue above)
