@@ -2,7 +2,8 @@ library(readxl)
 library(ggplot2)
 
 # Read respirometry data
-resp_data <- read_excel('data/MetabolicCalc.xlsx', sheet = 'Processed Data', 
+
+ resp_data <- read_excel('data/MetabolicCalc.xlsx', sheet = 'Processed Data', 
                   n_max = 4)
 
 # transpose matrix 
@@ -18,7 +19,7 @@ sapply(resp_data, class)
 resp_data$`metabolic_rate` <- as.numeric(resp_data$`metabolic_rate`)
 resp_data$`sex` <- as.factor(resp_data$`sex`)
 resp_data$`temp` <- as.numeric(resp_data$`temp`)
-
+str(resp_data)
 
 # MO2 (metabolic rate formula)
 # y = K * V*B/M (y = MO2, K = Slope, V = volume of respirometer - volume of ray, B = constant, M = mass of ray (kg))
@@ -36,7 +37,7 @@ mean_sex <- with(resp_data, tapply(`metabolic_rate`, list(sex), mean))
 with(resp_data, tapply(`metabolic_rate`, list(sex), sd))
 
 # MO2 Mean and Stdv by Temp
-mean_temp <- with(resp_data, tapply(`metabolic_rate`, list(temp), mean))
+mean_temp <- c(with(resp_data, tapply(`metabolic_rate`, list(temp), mean)))
 with(resp_data, tapply(`metabolic_rate`, list(temp), sd))
 mean_temp
 
@@ -54,24 +55,33 @@ ggplot(resp_data, aes(x = temp, y = metabolic_rate, color = sex)) +
   geom_point()
 
 # Box plot
-ggplot(resp_data, aes(x = factor(temp), y = metabolic_rate)) +
-  geom_boxplot() +
-  labs(x = "temp (˚C)", y = "metabolic rate (MO2)") +
+ggplot(resp_data, aes(x = factor(temp), y = metabolic_rate, fill = factor(temp))) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("#ffad33", "#339966", "#66b3ff")) +
+  labs(x = "Temperature (˚C)", y = "Metabolic Rate (mg O2 kg−1 h−1)") +
   ggtitle("Metabolic Rates by Temperature")
 
 # Bar graph
+# Use aggregate to calculate mean metabolic rate by temperature
+mean_rates <- aggregate(metabolic_rate ~ temp, data = resp_data, mean)
+mean_rates
+# Plot the mean metabolic rates as a bar graph
 my_colors <- c("#ffad33", "#339966", "#66b3ff")
 my_temps <- c("16", "21", "26")
-se <- sd(metabolic_rate)/sqrt(4)
+se <- aggregate(metabolic_rate ~ temp, data = resp_data, function(x) sd(x) / sqrt(length(x)))
+se
+length(mean_rates$metabolic_rate - se$metabolic_rate)
+length(mean_rates$metabolic_rate + se$metabolic_rate)
 
-ggplot(data = resp_data, aes(x = factor(temp), y =metabolic_rate, fill = factor(temp))) + 
+ggplot(mean_rates, aes(x = factor(temp), y = metabolic_rate, fill = factor(temp))) +
   geom_bar(stat = "identity") +
-  geom_errorbar(aes(ymin = metabolic_rate - se, ymax = metabolic_rate + se), width = 0.5) +
+  geom_errorbar(aes(ymin= mean_rates$metabolic_rate - se$metabolic_rate, ymax= mean_rates$metabolic_rate + se$metabolic_rate),
+                width = 0.1, position=position_dodge(.9)) +
   labs(title = "Mean Metabolic Rates by Temperature",
-     x = "Temperature (Celsius)",
-     y = "Mean Metabolic Rate (MO2)") +
+       x = "Temperature (˚C)",
+       y = "Metabolic Rate (mg O2 kg−1 h−1)") +
   scale_fill_manual(
-    name = "Temperature (Celsius)",
+    name = "Temperature (˚C)",
     labels = my_temps,
     values = my_colors
   )
